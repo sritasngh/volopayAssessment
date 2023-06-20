@@ -122,6 +122,56 @@ app.get('/api/nth_most_total_item', (req, res) => {
     });
   });
 
+// api 3
+app.get('/api/percentage_of_department_wise_sold_items', (req, res) => {
+    const { start_date, end_date } = req.query;
+    const mod_end_date = new Date(end_date).toISOString();
+
+    const query = `
+      SELECT department, (COUNT(*) * 100 / (SELECT COUNT(*) FROM my_table1 WHERE date >= ? AND date <= ?)) AS percentage
+      FROM my_table1
+      WHERE date >= ? AND date <= ?
+      GROUP BY department`;
+  
+    db.all(query, [start_date, mod_end_date, start_date, mod_end_date], (err, rows) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+        return;
+      }
+      if (rows.length === 0) {
+        res.status(404).json({ error: 'No data found' });
+        return;
+      }
+      const result = {};
+      rows.forEach(row => {
+        result[row.department] = `${row.percentage}%`;
+      });
+      res.json(result);
+    });
+  });
+
+// api 4
+app.get('/api/monthly_sales', (req, res) => {
+    const { product_name } = req.query;
+  
+    const query = `
+        SELECT strftime('%Y-%m', SUBSTR(date, 1, 19)) AS month, SUM(seats) AS total_sales
+        FROM my_table1
+        WHERE software = ?
+        GROUP BY month`;
+
+  
+    db.all(query, [product_name], (err, rows) => {
+      if (err) {
+        console.error('Error executing query:', err);
+        res.status(500).json({ error: 'Internal Server Error' });
+        return;
+      }
+      res.json(rows);
+    });
+  });
+
 // Start the server
 const port = 8000;
 app.listen(port, () => {
