@@ -9,7 +9,7 @@ const app = require('./volopayassessment');
   describe('GET /api/total_items', () => {
     it('should return the total number of seats sold in Marketing during Q3', async () => {
       const response = await request(app).get('/api/total_items')
-        .query({ start_date: '2022-05-10', end_date: '2022-05-11', department: 'Marketting' });
+        .query({ start_date: '2022-05-10', end_date: '2022-05-11', department: 'Marketing' });
       expect(response.status).toBe(200);
       expect(response.body).toHaveProperty('total_seats', 19); 
     });
